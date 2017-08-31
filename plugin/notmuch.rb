@@ -203,6 +203,8 @@ def folders_render()
       count = count_threads ? q.count_threads : q.count_messages
       if name == ''
         b << ""
+      elsif search == ''
+        b << "          %s" % [name]
       elsif display_unread
         u = $curbuf.query("(%s) and tag:unread" % [search])
         $exclude_tags.each { |t|

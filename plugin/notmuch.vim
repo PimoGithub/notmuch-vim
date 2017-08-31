@@ -217,7 +217,7 @@ function! s:show_tag(intags)
 		let tags = a:intags
 	endif
 	ruby do_tag(get_cur_view, VIM::evaluate('l:tags'))
-	call s:show_next_thread()
+	"call s:show_next_thread()
 endfunction
 
 function! s:search_search_prompt()
@@ -252,7 +252,7 @@ function! s:search_tag(intags)
 		let tags = a:intags
 	endif
 	ruby do_tag(get_thread_id, VIM::evaluate('l:tags'))
-	norm j
+	"norm j
 endfunction
 
 function! s:search_tag_all(intags)
@@ -508,6 +508,59 @@ EOF
 	endif
 endfunction
 
+
+
+" --------------------------------------------------
+" Pimo functions
+" --------------------------------------------------
+function! s:tag_fct(tagaction)
+	if !exists("&filetype")
+		echo "no filetype defined..."
+		finish
+	endif
+
+	if &filetype == 'notmuch-folders'
+		echo "tag action not possible in folders view"
+	elseif &filetype == 'notmuch-search'
+		echom "tag action " a:tagaction
+		call s:search_tag(a:tagaction)
+	elseif &filetype == 'notmuch-show'
+		echom "tag action " a:tagaction
+		call s:show_tag(a:tagaction)
+	else
+		echo "not notmuch..."
+	endif
+endfunction
+
+function! s:refresh_fct()
+	if !exists("&filetype")
+		echo "no filetype defined..."
+		finish
+	endif
+
+	if &filetype == 'notmuch-folders'
+		call s:folders_refresh()
+	elseif &filetype == 'notmuch-search'
+		call s:search_refresh()
+	elseif &filetype == 'notmuch-show'
+		echo "NotMuch : refresh action not possible in show view"
+	else
+		echo "not notmuch..."
+	endif
+endfunction
+
+" --------------------------------------------------
+" API:
+" --------------------------------------------------
 command -nargs=* NotMuch call s:NotMuch(<f-args>)
+command -nargs=* NM call s:NotMuch(<f-args>)
+
+command -nargs=* NMtag call s:tag_fct(<f-args>)
+
+function! g:NM_refresh()
+	call s:refresh_fct()
+endfunction
+
+command -nargs=* NMnext call s:show_next_thread()
 
 " vim: set noexpandtab:
