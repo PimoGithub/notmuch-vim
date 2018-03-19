@@ -128,6 +128,60 @@ def is_our_address(address)
   return nil
 end
 
+def rb_show_forward(orig)
+  reply = orig.reply do |m|
+    m.cc = []
+    m.to = []
+    email_addr = $email_address
+    # Use hashes for email addresses so we can eliminate duplicates.
+    cc = Hash.new
+    if orig[:cc]
+      orig[:cc].each do |o|
+        cc[o.address] = o
+      end
+    end
+    if orig[:to]
+      orig[:to].each do |o|
+        cc[o.address] = o
+      end
+    end
+    cc.each do |e_addr, addr|
+      if is_our_address(e_addr)
+        email_addr = is_our_address(e_addr)
+      end
+    end
+    m.from = "#{$email_name} <#{email_addr}>"
+    m.charset = 'utf-8'
+  end
+
+  lines = []
+
+  body_lines = []
+  addr = Mail::Address.new(orig[:from].value)
+  name = addr.name
+  name = addr.local + "@" if name.nil? && !addr.local.nil?
+  name = "somebody" if name.nil?
+
+  body_lines << "%s wrote:" % name
+  part = orig.find_first_text
+  part.convert.each_line do |l|
+    body_lines << "> %s" % l.chomp
+  end
+  body_lines << ""
+  body_lines << ""
+  body_lines << ""
+
+  reply.body = body_lines.join("\n")
+
+  lines += reply.present.lines.map { |e| e.chomp }
+  lines << ""
+
+  #cur = lines.count - 1
+  cur = 2
+
+  open_compose_helper(lines, cur)
+end
+
 def rb_show_reply(orig)
   reply = orig.reply do |m|
     m.cc = []
@@ -393,7 +447,7 @@ def rb_open_compose(to_email)
   open_compose_helper(lines, cur)
 end
 
-def rb_show_view_magic(line, lineno, fold)
+def rb_show_view_magic(line, lineno, fold, col)
   # Also use enter to open folds.  After using 'enter' to get
   # all the way to here it feels very natural to want to use it
   # to open folds too.
@@ -412,7 +466,8 @@ def rb_show_view_magic(line, lineno, fold)
     if match and match.length == 2
       rb_show_view_attachment(line)
     else
-      VIM::command('call s:show_open_uri()')
+      # VIM::command('call s:show_open_uri()')
+      rb_show_open_uri(line, col)
     end
   end
 end

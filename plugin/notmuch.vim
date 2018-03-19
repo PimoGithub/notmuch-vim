@@ -20,7 +20,7 @@ let g:notmuch_search_maps = {
 	\ 'q':		'kill_this_buffer()',
 	\ '<Enter>':	'search_show_thread(1)',
 	\ '<Space>':	'search_show_thread(2)',
-	\ 'A':		'search_tag_all("-inbox -unread")',
+	\ 'A':		'search_tag_all("-unread")',
 	\ 'a':		'search_tag("-inbox -unread")',
 	\ 'I':		'search_tag("-unread")',
 	\ 't':		'search_tag("")',
@@ -32,7 +32,7 @@ let g:notmuch_search_maps = {
 
 let g:notmuch_show_maps = {
 	\ 'q':		'kill_this_buffer()',
-	\ 'a':		'show_tag("-inbox -unread")',
+	\ 'aa':		'show_tag("-inbox -unread")',
 	\ 'I':		'show_tag("-unread")',
 	\ 't':		'show_tag("")',
 	\ 'o':		'show_open_msg()',
@@ -41,6 +41,7 @@ let g:notmuch_show_maps = {
 	\ 's':		'show_save_msg()',
 	\ 'p':		'show_save_patches()',
 	\ 'r':		'show_reply()',
+	\ 'f':		'show_forward()',
 	\ '?':		'show_info()',
 	\ '<S-Tab>':	'show_prev_msg()',
 	\ '<Tab>':	'show_next_msg("unread")',
@@ -136,6 +137,16 @@ function! s:show_next_msg(matching_tag)
 	ruby rb_show_next_msg(VIM::evaluate('a:matching_tag'))
 endfunction
 
+function! s:show_forward()
+	ruby rb_show_forward(get_message.mail)
+	let b:compose_done = 0
+	call s:set_map(g:notmuch_compose_maps)
+	autocmd BufDelete <buffer> call s:on_compose_delete()
+	if g:notmuch_compose_start_insert
+		startinsert!
+	end
+endfunction
+
 function! s:show_reply()
 	ruby rb_show_reply(get_message.mail)
 	let b:compose_done = 0
@@ -164,9 +175,10 @@ function! s:show_view_magic()
 	let line = getline(".")
 	let pos = getpos(".")
 	let lineno = pos[1]
+	let col = pos[2]
 	let fold = foldclosed(lineno)
 
-	ruby rb_show_view_magic(VIM::evaluate('line'), VIM::evaluate('lineno'), VIM::evaluate('fold'))
+	ruby rb_show_view_magic(VIM::evaluate('line'), VIM::evaluate('lineno'), VIM::evaluate('fold'), VIM::evaluate('col'))
 endfunction
 
 function! s:show_view_attachment()
