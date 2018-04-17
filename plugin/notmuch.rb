@@ -38,6 +38,7 @@ def get_config
 end
 
 def vim_puts(s)
+  s.gsub!(/'/, '_')
   VIM::command("echo '#{s.to_s}'")
 end
 
