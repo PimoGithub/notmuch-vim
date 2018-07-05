@@ -232,6 +232,15 @@ function! s:show_tag(intags)
 	"call s:show_next_thread()
 endfunction
 
+function! s:show_mode_msg_change_tag(intags)
+	if empty(a:intags)
+		let tags = input('tags: ')
+	else
+		let tags = a:intags
+	endif
+	ruby do_tag(get_message_id, VIM::evaluate('l:tags'))
+endfunction
+
 function! s:search_search_prompt()
 	let text = input('Search: ')
 	if text == ""
@@ -544,6 +553,24 @@ function! s:tag_fct(tagaction)
 	endif
 endfunction
 
+function! s:tag_msg_fct(tagaction)
+	if !exists("&filetype")
+		echo "no filetype defined..."
+		finish
+	endif
+
+	if &filetype == 'notmuch-folders'
+		echo "tag action not possible in folders view"
+	elseif &filetype == 'notmuch-search'
+		echo "tag action not possible in search view"
+	elseif &filetype == 'notmuch-show'
+		echom "MSG tag action " a:tagaction
+		call s:show_mode_msg_change_tag(a:tagaction)
+	else
+		echo "not notmuch..."
+	endif
+endfunction
+
 function! s:refresh_fct()
 	if !exists("&filetype")
 		echo "no filetype defined..."
@@ -568,6 +595,7 @@ command -nargs=* NotMuch call s:NotMuch(<f-args>)
 command -nargs=* NM call s:NotMuch(<f-args>)
 
 command -nargs=* NMtag call s:tag_fct(<f-args>)
+command -nargs=* NMmsgtag call s:tag_msg_fct(<f-args>)
 
 function! g:NM_refresh()
 	call s:refresh_fct()

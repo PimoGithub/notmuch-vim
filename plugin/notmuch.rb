@@ -1,3 +1,5 @@
+# git://git.notmuchmail.org/git/notmuch
+# folder : bindings/ruby/
 require 'notmuch'
 require 'rubygems'
 require 'tempfile'
@@ -70,6 +72,11 @@ end
 def get_message
   n = $curbuf.line_number
   return $curbuf.messages.find { |m| n >= m.start && n < m.end }
+end
+
+def get_message_id
+  m = get_message
+  return "id:%s" % m.message_id
 end
 
 def get_cur_view
