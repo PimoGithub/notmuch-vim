@@ -615,12 +615,11 @@ command -nargs=* NMtag call s:tag_fct(<f-args>)
 command -nargs=* NMmsgtag call s:tag_msg_fct(<f-args>)
 command -nargs=* NMalltag call s:tag_all(<f-args>)
 
-function! g:NM_refresh()
-	call s:refresh_fct()
-endfunction
 function! g:NM_tag_all(tags)
 	call s:tag_all(a:tags)
 endfunction
+
+command -nargs=* NMrefresh call s:refresh_fct()
 
 command -nargs=* NMnext call s:show_next_thread()
 
