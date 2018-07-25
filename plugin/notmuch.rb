@@ -357,9 +357,13 @@ def rb_compose_send(text, fname)
 
   del_method = VIM::evaluate('g:notmuch_sendmail_method').to_sym
   del_param_vim = VIM::evaluate('g:notmuch_sendmail_param')
+  del_passcmd = VIM::evaluate('g:notmuch_sendmail_passcmd')
   del_param = {}
   del_param_vim.each do |k, v|
     del_param[k.to_sym] = v
+  end
+  if del_passcmd
+    del_param['password'.to_sym] = `#{del_passcmd}`
   end
 
   vim_puts("Sending email via #{del_method}...")
